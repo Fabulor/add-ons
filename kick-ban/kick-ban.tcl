@@ -22,13 +22,13 @@ proc fabulor::addons::kick_ban::parse_target_and_reason {arguments default_reaso
 
 proc fabulor::addons::kick_ban::validate_target {command_name nick} {
     if {$nick eq ""} {
-        zoitechat::print "Usage: /$command_name <nick> ?reason?"
+        fabulor::print "Usage: /$command_name <nick> ?reason?"
         return 0
     }
 
-    array set user [zoitechat::get_user_info]
-    if {[info exists user(nick)] && [zoitechat::nickcmp $nick $user(nick)] == 0} {
-        zoitechat::print "Trying to kick yourself is not healthy!"
+    array set user [fabulor::get_user_info]
+    if {[info exists user(nick)] && [fabulor::nickcmp $nick $user(nick)] == 0} {
+        fabulor::print "Trying to kick yourself is not healthy!"
         return 0
     }
 
@@ -43,8 +43,8 @@ proc fabulor::addons::kick_ban::kb {arguments} {
         return
     }
 
-    zoitechat::command BAN $nick 3
-    zoitechat::command KICK $nick $reason
+    fabulor::command BAN $nick 3
+    fabulor::command KICK $nick $reason
 }
 
 proc fabulor::addons::kick_ban::kbn {arguments} {
@@ -55,12 +55,12 @@ proc fabulor::addons::kick_ban::kbn {arguments} {
         return
     }
 
-    zoitechat::command BAN ${nick}!*@*
-    zoitechat::command KICK $nick $reason
+    fabulor::command BAN ${nick}!*@*
+    fabulor::command KICK $nick $reason
 }
 
 proc init {} {
-    zoitechat::register_command KB fabulor::addons::kick_ban::kb
-    zoitechat::register_command KBN fabulor::addons::kick_ban::kbn
-    zoitechat::log "Kick-ban aliases initialised"
+    fabulor::register_command KB fabulor::addons::kick_ban::kb
+    fabulor::register_command KBN fabulor::addons::kick_ban::kbn
+    fabulor::log "Kick-ban aliases initialised"
 }

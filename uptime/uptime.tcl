@@ -126,21 +126,21 @@ proc fabulor::addons::uptime::uptime {arguments} {
   }
 
   if {$mode ni {auto say local}} {
-    zoitechat::print "Usage: /UPTIME ?auto|say|local?"
+    fabulor::print "Usage: /UPTIME ?auto|say|local?"
     return
   }
 
   if {[catch {
     fabulor::addons::uptime::get_windows_uptime_seconds
   } uptime_result]} {
-    zoitechat::print "Unable to get Windows uptime: $uptime_result"
+    fabulor::print "Unable to get Windows uptime: $uptime_result"
     return
   }
 
   set uptime_seconds $uptime_result
 
   set nick "Me"
-  array set user [zoitechat::get_user_info]
+  array set user [fabulor::get_user_info]
   if {[info exists user(nick)] && $user(nick) ne ""} {
     set nick $user(nick)
   }
@@ -162,26 +162,26 @@ proc fabulor::addons::uptime::uptime {arguments} {
 
   if {$mode eq "local"} {
     if {$network ne ""} {
-      zoitechat::print "($network) $text"
+      fabulor::print "($network) $text"
     } else {
-      zoitechat::print $text
+      fabulor::print $text
     }
     return
   }
 
   if {$channel ne ""} {
-    zoitechat::send_message $channel $text
+    fabulor::send_message $channel $text
   } else {
     # No active channel (for example, server tab): keep output local.
     if {$network ne ""} {
-      zoitechat::print "($network) $text"
+      fabulor::print "($network) $text"
     } else {
-      zoitechat::print $text
+      fabulor::print $text
     }
   }
 }
 
 proc init {} {
-  zoitechat::register_command UPTIME fabulor::addons::uptime::uptime
-  zoitechat::log "Uptime add-on initialised"
+  fabulor::register_command UPTIME fabulor::addons::uptime::uptime
+  fabulor::log "Uptime add-on initialised"
 }

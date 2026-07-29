@@ -10,15 +10,15 @@ proc fabulor::addons::set-away-back::allaway {arguments} {
         set message "I am away."
     }
 
-    zoitechat::command ALLSERV AWAY $message
+    fabulor::command ALLSERV AWAY $message
 }
 
 proc fabulor::addons::set-away-back::allback {arguments} {
-    zoitechat::command ALLSERV BACK
+    fabulor::command ALLSERV BACK
 }
 
 proc init {} {
-    zoitechat::register_command ALLAWAY fabulor::addons::set-away-back::allaway
-    zoitechat::register_command ALLBACK fabulor::addons::set-away-back::allback
-    zoitechat::log "Set-away-back initialised"
+    fabulor::register_command ALLAWAY fabulor::addons::set-away-back::allaway
+    fabulor::register_command ALLBACK fabulor::addons::set-away-back::allback
+    fabulor::log "Set-away-back initialised"
 }
