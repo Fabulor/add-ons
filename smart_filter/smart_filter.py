@@ -4,7 +4,7 @@
 
 """A Fabulor plugin that filters join/nick change/part/quit messages, in order to reduce spam."""
 
-__module_name__ = "Filter"
+__module_name__ = "Smart Filter"
 __module_version__ = "1.0"
 __module_description__ = "Filters join/part messages"
 

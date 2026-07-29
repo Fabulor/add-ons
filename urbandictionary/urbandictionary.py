@@ -12,7 +12,7 @@ License: WTFPL <http://www.wtfpl.net/>
 
 __module_name__ = "Urban Dictionary"
 __module_version__ = "1.0"
-__module_description__ = "Gets the Urban Dictionary"
+__module_description__ = "Gets the Urban Dictionary definitions"
 import json
 from json import JSONDecodeError
 from urllib.error import HTTPError, URLError
