@@ -4,7 +4,7 @@ Creator: x13machine <https://github.com/x13machine>
 License: WTFPL <http://www.wtfpl.net/>
 """
 
-# Fabulor-Name: UrbanDctionary
+# Fabulor-Name: Urban Dictionary
 # Fabulor-Version: 1.0
 # Fabulor-Description: Gets the Urban Dictionary definitions
 
