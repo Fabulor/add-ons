@@ -40,7 +40,7 @@ Clear that history after setup if Fabulor records sensitive commands.
 
 ## Behaviour
 
-AutoAuth waits for the server's successful `NICK` event, verifies that the new
+AutoAuth watches Fabulor's confirmed nick-change events, verifies that the new
 nickname is your current nickname, then runs:
 
 ```
@@ -49,3 +49,6 @@ nickname is your current nickname, then runs:
 
 It only acts when a password is configured and AutoAuth is enabled for the
 current network.
+
+After it sends the identify command, AutoAuth displays a local success or
+failure message when it receives a recognised NickServ confirmation notice.

@@ -23,6 +23,27 @@ __module_description__ = "Identifies with NickServ after a successful nick chang
 
 SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "autoauth.json")
 _RECENT_IDENTIFIES = {}
+_PENDING_IDENTIFIES = {}
+_CONFIRMATION_TIMEOUT = 20
+
+_SUCCESS_NOTICES = (
+    "password accepted",
+    "you are now identified",
+    "you are now logged in",
+    "you are now recognized",
+    "you are identified",
+    "already identified",
+)
+_FAILURE_NOTICES = (
+    "invalid password",
+    "incorrect password",
+    "password incorrect",
+    "authentication failed",
+    "identify failed",
+    "login failed",
+    "you are not identified",
+    "not registered",
+)
 
 
 class _DataBlob(ctypes.Structure):
@@ -207,10 +228,7 @@ def on_autoauth_command(words, word_eol, userdata):
     return fabulor.EAT_ALL
 
 
-def on_nick_change(words, word_eol, userdata):
-    del word_eol, userdata
-    if len(words) < 3:
-        return fabulor.EAT_NONE
+def _identify_after_nick_change(new_nick):
     key, _display = _network()
     if key is None:
         return fabulor.EAT_NONE
@@ -218,7 +236,7 @@ def on_nick_change(words, word_eol, userdata):
     if not entry or not entry.get("enabled", True) or not entry.get("password"):
         return fabulor.EAT_NONE
 
-    new_nick = words[2].lstrip(":")
+    new_nick = new_nick.lstrip(":")
     current_nick = fabulor.get_info("nick")
     if not new_nick or not current_nick or fabulor.nickcmp(new_nick, current_nick) != 0:
         return fabulor.EAT_NONE
@@ -234,7 +252,50 @@ def on_nick_change(words, word_eol, userdata):
         return fabulor.EAT_NONE
 
     _RECENT_IDENTIFIES[marker] = now
+    _PENDING_IDENTIFIES[key] = now
     fabulor.command("NickServ IDENTIFY " + password)
+    return fabulor.EAT_NONE
+
+
+def on_nick_change(words, word_eol, userdata):
+    """Handle the raw IRC NICK message: :old!user@host NICK :new."""
+    del word_eol, userdata
+    if len(words) < 3:
+        return fabulor.EAT_NONE
+    return _identify_after_nick_change(words[2])
+
+
+def on_change_nick_print(words, word_eol, userdata, attributes=None):
+    """Handle Fabulor's displayed Change Nick event: old-nick, new-nick."""
+    del word_eol, userdata, attributes
+    if len(words) < 2:
+        return fabulor.EAT_NONE
+    return _identify_after_nick_change(words[1])
+
+
+def on_nickserv_notice(words, word_eol, userdata, attributes):
+    """Report a NickServ result for an identification initiated by this add-on."""
+    del word_eol, userdata, attributes
+    if len(words) < 4:
+        return fabulor.EAT_NONE
+    key, _display = _network()
+    started = _PENDING_IDENTIFIES.get(key)
+    if key is None or started is None:
+        return fabulor.EAT_NONE
+    if time.monotonic() - started > _CONFIRMATION_TIMEOUT:
+        del _PENDING_IDENTIFIES[key]
+        return fabulor.EAT_NONE
+
+    sender = words[0].lstrip(":").split("!", 1)[0]
+    if not sender or fabulor.nickcmp(sender, "NickServ") != 0:
+        return fabulor.EAT_NONE
+    notice = " ".join(words[3:]).lstrip(":").casefold()
+    if any(phrase in notice for phrase in _FAILURE_NOTICES):
+        del _PENDING_IDENTIFIES[key]
+        _print("NickServ authentication failed.")
+    elif any(phrase in notice for phrase in _SUCCESS_NOTICES):
+        del _PENDING_IDENTIFIES[key]
+        _print("NickServ authentication succeeded.")
     return fabulor.EAT_NONE
 
 
@@ -245,4 +306,9 @@ fabulor.hook_command(
     help="Manage encrypted NickServ auto-authentication; use /AUTOAUTH HELP",
 )
 fabulor.hook_server("NICK", on_nick_change)
+if hasattr(fabulor, "hook_print_attrs"):
+    fabulor.hook_print_attrs(
+        "Change Nick", on_change_nick_print, priority=getattr(fabulor, "PRI_LOW", 0)
+    )
+fabulor.hook_server_attrs("NOTICE", on_nickserv_notice, priority=fabulor.PRI_LOW)
 _print("Loaded. Use /AUTOAUTH SET <password> in each network you want to enable.")
