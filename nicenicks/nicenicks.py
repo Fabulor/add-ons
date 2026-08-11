@@ -180,9 +180,7 @@ def get_color(ctable, nick):
             return c
         elif n == nick:
             color = c
-            if (
-                pcolor is not None and c != pcolor
-            ):  # if this nick has a color in the table different from its permacolor
+            if pcolor is not None:  # if this nick has a color in the table different from its permacolor
                 # change the color in the color table
                 ctable.pop(i)
                 dmsg(
