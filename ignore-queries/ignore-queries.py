@@ -153,6 +153,7 @@ def _save_whitelist():
             os.remove(temporary_file)
         except OSError:
             # Best-effort cleanup: ignore failure removing the temporary file.
+            # Best-effort cleanup: ignore failure removing the temporary file.
             pass
         _print("Could not save whitelist: {}".format(error))
         return False
