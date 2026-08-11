@@ -57,7 +57,7 @@ _crypt32.CryptProtectData.argtypes = (
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.wintypes.DWORD,
-    ctypes.wintypes.DWORD,
+    ctypes.POINTER(_DataBlob),
 )
 _crypt32.CryptProtectData.restype = ctypes.wintypes.BOOL
 _crypt32.CryptUnprotectData.argtypes = (
@@ -67,7 +67,7 @@ _crypt32.CryptUnprotectData.argtypes = (
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.wintypes.DWORD,
-    ctypes.wintypes.DWORD,
+    ctypes.POINTER(_DataBlob),
 )
 _crypt32.CryptUnprotectData.restype = ctypes.wintypes.BOOL
 _kernel32.LocalFree.argtypes = (ctypes.c_void_p,)
