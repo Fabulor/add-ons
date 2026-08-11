@@ -45,7 +45,7 @@ def new_msg(word, word_eol, event, attrs):
     """
     global halt
     if halt is True:
-        return
+        return hexchat.EAT_NONE
     user = hexchat.strip(word[0])
     # If the user logged in before we did (which means the Join part of
     # filter_msg didn't take effect), add him to the dict.
@@ -62,6 +62,7 @@ def new_msg(word, word_eol, event, attrs):
         return hexchat.EAT_ALL
     else:
         last_seen[user] = [time(), 1]
+        return hexchat.EAT_NONE
 
 
 def filter_msg(word, word_eol, event, attrs):
