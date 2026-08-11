@@ -10,7 +10,6 @@ only be decrypted by the same Windows user on this computer.
 
 import base64
 import ctypes
-from ctypes import wintypes
 import json
 import os
 import time
@@ -47,31 +46,31 @@ _FAILURE_NOTICES = (
 
 
 class _DataBlob(ctypes.Structure):
-    _fields_ = (("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte)))
+    _fields_ = (("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte)))
 
 
 _crypt32 = ctypes.windll.crypt32
 _kernel32 = ctypes.windll.kernel32
 _crypt32.CryptProtectData.argtypes = (
     ctypes.POINTER(_DataBlob),
-    wintypes.LPCWSTR,
+    ctypes.wintypes.LPCWSTR,
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.c_void_p,
-    wintypes.DWORD,
+    ctypes.wintypes.DWORD,
     ctypes.POINTER(_DataBlob),
 )
-_crypt32.CryptProtectData.restype = wintypes.BOOL
+_crypt32.CryptProtectData.restype = ctypes.wintypes.BOOL
 _crypt32.CryptUnprotectData.argtypes = (
     ctypes.POINTER(_DataBlob),
-    ctypes.POINTER(wintypes.LPWSTR),
+    ctypes.POINTER(ctypes.wintypes.LPWSTR),
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.c_void_p,
-    wintypes.DWORD,
+    ctypes.wintypes.DWORD,
     ctypes.POINTER(_DataBlob),
 )
-_crypt32.CryptUnprotectData.restype = wintypes.BOOL
+_crypt32.CryptUnprotectData.restype = ctypes.wintypes.BOOL
 _kernel32.LocalFree.argtypes = (ctypes.c_void_p,)
 _kernel32.LocalFree.restype = ctypes.c_void_p
 
