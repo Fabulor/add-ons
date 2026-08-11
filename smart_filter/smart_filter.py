@@ -63,6 +63,7 @@ def new_msg(word, word_eol, event, attrs):
     else:
         last_seen[user] = [time(), 1]
         return hexchat.EAT_NONE
+        return hexchat.EAT_NONE
 
 
 def filter_msg(word, word_eol, event, attrs):
