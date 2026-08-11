@@ -146,6 +146,8 @@ def _save_settings():
         try:
             os.remove(temporary)
         except OSError:
+            # Best-effort cleanup: if removing the temporary file fails,
+            # keep reporting the original save error without overriding it.
             pass
         _print("Could not save settings: {}".format(error))
         return False
