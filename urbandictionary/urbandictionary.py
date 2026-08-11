@@ -14,7 +14,6 @@ __module_name__ = "Urban Dictionary"
 __module_version__ = "1.0"
 __module_description__ = "Gets the Urban Dictionary definitions"
 import json
-from json import JSONDecodeError
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -37,7 +36,7 @@ def ud(word, word_eol, userdata):
         hexchat.prnt("Urban Dictionary -> " + data["word"] + ": " + data["definition"])
     except (IndexError, KeyError):
         hexchat.prnt("Urban Dictionary: no definition found")
-    except (HTTPError, URLError, JSONDecodeError) as error:
+    except (HTTPError, URLError, json.JSONDecodeError) as error:
         hexchat.prnt("Urban Dictionary: lookup failed: " + str(error))
 
     return hexchat.EAT_ALL
