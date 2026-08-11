@@ -93,7 +93,6 @@ def filter_msg(word, word_eol, event, attrs):
     if last_seen[user][1] == 0 or last_seen[user][0] + user_timeout < time():
         return hexchat.EAT_ALL
     return hexchat.EAT_NONE
-    return hexchat.EAT_NONE
 
 
 hooks_new = [
