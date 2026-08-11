@@ -48,13 +48,12 @@ _FAILURE_NOTICES = (
 class _DataBlob(ctypes.Structure):
     _fields_ = (("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte)))
 
-
 _crypt32 = ctypes.windll.crypt32
 _kernel32 = ctypes.windll.kernel32
 _crypt32.CryptProtectData.argtypes = (
     ctypes.POINTER(_DataBlob),
     ctypes.wintypes.LPCWSTR,
-    ctypes.c_void_p,
+    ctypes.wintypes.LPCWSTR,
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.wintypes.DWORD,
@@ -64,7 +63,7 @@ _crypt32.CryptProtectData.restype = ctypes.wintypes.BOOL
 _crypt32.CryptUnprotectData.argtypes = (
     ctypes.POINTER(_DataBlob),
     ctypes.POINTER(ctypes.wintypes.LPWSTR),
-    ctypes.c_void_p,
+    ctypes.POINTER(ctypes.wintypes.LPWSTR),
     ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.wintypes.DWORD,
