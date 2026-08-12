@@ -10,6 +10,7 @@ only be decrypted by the same Windows user on this computer.
 
 import base64
 import ctypes
+from ctypes import wintypes
 import json
 import os
 import time
@@ -46,30 +47,31 @@ _FAILURE_NOTICES = (
 
 
 class _DataBlob(ctypes.Structure):
-    _fields_ = (("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte)))
+    _fields_ = (("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte)))
+
 
 _crypt32 = ctypes.windll.crypt32
 _kernel32 = ctypes.windll.kernel32
 _crypt32.CryptProtectData.argtypes = (
     ctypes.POINTER(_DataBlob),
-    ctypes.wintypes.LPCWSTR,
-    ctypes.wintypes.LPCWSTR,
+    wintypes.LPCWSTR,
+    wintypes.LPCWSTR,
     ctypes.c_void_p,
     ctypes.c_void_p,
-    ctypes.wintypes.DWORD,
+    wintypes.DWORD,
     ctypes.POINTER(_DataBlob),
 )
-_crypt32.CryptProtectData.restype = ctypes.wintypes.BOOL
+_crypt32.CryptProtectData.restype = wintypes.BOOL
 _crypt32.CryptUnprotectData.argtypes = (
     ctypes.POINTER(_DataBlob),
-    ctypes.POINTER(ctypes.wintypes.LPWSTR),
-    ctypes.POINTER(ctypes.wintypes.LPWSTR),
+    ctypes.POINTER(wintypes.LPWSTR),
+    ctypes.POINTER(wintypes.LPWSTR),
     ctypes.c_void_p,
     ctypes.c_void_p,
-    ctypes.wintypes.DWORD,
+    wintypes.DWORD,
     ctypes.POINTER(_DataBlob),
 )
-_crypt32.CryptUnprotectData.restype = ctypes.wintypes.BOOL
+_crypt32.CryptUnprotectData.restype = wintypes.BOOL
 _kernel32.LocalFree.argtypes = (ctypes.c_void_p,)
 _kernel32.LocalFree.restype = ctypes.c_void_p
 
@@ -79,7 +81,9 @@ def _print(message):
 
 
 def _last_error():
-    return ctypes.FormatError(ctypes.get_last_error()).strip() or "unknown Windows error"
+    return (
+        ctypes.FormatError(ctypes.get_last_error()).strip() or "unknown Windows error"
+    )
 
 
 def _protect(plaintext):
@@ -88,11 +92,19 @@ def _protect(plaintext):
     source = _DataBlob(len(data), ctypes.cast(buffer, ctypes.POINTER(ctypes.c_byte)))
     encrypted = _DataBlob()
     if not _crypt32.CryptProtectData(
-        ctypes.byref(source), "Fabulor AutoAuth", None, None, None, 0, ctypes.byref(encrypted)
+        ctypes.byref(source),
+        "Fabulor AutoAuth",
+        None,
+        None,
+        None,
+        0,
+        ctypes.byref(encrypted),
     ):
         raise OSError("Windows DPAPI could not encrypt the password: " + _last_error())
     try:
-        return base64.b64encode(ctypes.string_at(encrypted.pbData, encrypted.cbData)).decode("ascii")
+        return base64.b64encode(
+            ctypes.string_at(encrypted.pbData, encrypted.cbData)
+        ).decode("ascii")
     finally:
         _kernel32.LocalFree(encrypted.pbData)
 
@@ -124,7 +136,9 @@ def _load_settings():
     try:
         with open(SETTINGS_FILE, "r", encoding="utf-8") as handle:
             settings = json.load(handle)
-        if not isinstance(settings, dict) or not isinstance(settings.get("networks"), dict):
+        if not isinstance(settings, dict) or not isinstance(
+            settings.get("networks"), dict
+        ):
             raise ValueError("the settings file has an invalid format")
         return settings
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
@@ -209,7 +223,11 @@ def on_autoauth_command(words, word_eol, userdata):
             else:
                 _settings["networks"][key] = {"enabled": True, "password": encrypted}
                 if _save_settings():
-                    _print("Encrypted password saved; auto-authentication enabled for {}.".format(display))
+                    _print(
+                        "Encrypted password saved; auto-authentication enabled for {}.".format(
+                            display
+                        )
+                    )
     elif action == "CLEAR":
         if _settings["networks"].pop(key, None) is None:
             _print("No password is stored for {}.".format(display))
@@ -248,7 +266,11 @@ def _identify_after_nick_change(new_nick):
     try:
         password = _unprotect(entry["password"])
     except (OSError, UnicodeDecodeError, ValueError) as error:
-        _print("Cannot decrypt the password for this network: {}. Use /AUTOAUTH SET to replace it.".format(error))
+        _print(
+            "Cannot decrypt the password for this network: {}. Use /AUTOAUTH SET to replace it.".format(
+                error
+            )
+        )
         return fabulor.EAT_NONE
 
     _RECENT_IDENTIFIES[marker] = now
