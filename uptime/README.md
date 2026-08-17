@@ -10,5 +10,6 @@ Displays the current Windows system uptime from Fabulor.
 - `local` displays the uptime only in Fabulor.
 - When no channel is active, output remains local.
 
-The add-on queries Windows through PowerShell, PowerShell 7, or WMIC, using the
-first available method.
+The add-on requests the local Windows uptime directly from Fabulor's trusted
+simple Tcl API. It does not launch external processes or depend on PowerShell,
+WMI/CIM, or the deprecated WMIC executable.
