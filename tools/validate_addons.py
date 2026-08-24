@@ -12,6 +12,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_SUFFIXES = {".py", ".tcl"}
 METADATA_FIELDS = ("Name", "Version", "Description")
+PYTHON_METADATA_NAMES = {
+    "Name": "__module_name__",
+    "Version": "__module_version__",
+    "Description": "__module_description__",
+}
 
 
 def fail(message: str) -> None:
@@ -33,6 +38,47 @@ def metadata_value(text: str, field: str) -> str | None:
     )
     match = pattern.search(text)
     return match.group(1) if match else None
+
+
+def python_metadata_values(path: Path, text: str) -> tuple[dict[str, str], int]:
+    try:
+        tree = ast.parse(text, filename=str(path))
+    except SyntaxError as exc:
+        fail(f"{path.relative_to(ROOT)} has invalid Python syntax: {exc}")
+        return {}, 1
+
+    assignments: dict[str, str] = {}
+    for statement in tree.body:
+        if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
+            continue
+
+        targets = (
+            statement.targets
+            if isinstance(statement, ast.Assign)
+            else [statement.target]
+        )
+        for target in targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if target.id not in PYTHON_METADATA_NAMES.values():
+                continue
+            try:
+                value = ast.literal_eval(statement.value)
+            except (TypeError, ValueError):
+                fail(
+                    f"{path.relative_to(ROOT)} metadata {target.id} "
+                    "must be a string literal"
+                )
+                return {}, 1
+            if not isinstance(value, str) or not value.strip():
+                fail(
+                    f"{path.relative_to(ROOT)} metadata {target.id} "
+                    "must be a non-empty string"
+                )
+                return {}, 1
+            assignments[target.id] = value
+
+    return assignments, 0
 
 
 def validate_source(path: Path, names: dict[str, Path]) -> int:
@@ -66,11 +112,20 @@ def validate_source(path: Path, names: dict[str, Path]) -> int:
             names[key] = path
 
     if path.suffix == ".py":
-        try:
-            ast.parse(text, filename=str(path))
-        except SyntaxError as exc:
-            fail(f"{path.relative_to(ROOT)} has invalid Python syntax: {exc}")
-            errors += 1
+        assignments, parse_errors = python_metadata_values(path, text)
+        errors += parse_errors
+        if not parse_errors:
+            for field, variable in PYTHON_METADATA_NAMES.items():
+                value = assignments.get(variable)
+                if value is None:
+                    fail(f"{path.relative_to(ROOT)} lacks required {variable}")
+                    errors += 1
+                elif field in values and value != values[field]:
+                    fail(
+                        f"{path.relative_to(ROOT)} has mismatched {variable} "
+                        f"and Fabulor-{field} metadata"
+                    )
+                    errors += 1
 
     return errors
 

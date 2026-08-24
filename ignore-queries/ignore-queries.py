@@ -1,6 +1,6 @@
 # Fabulor-Name: Ignore Queries
 # Fabulor-Version: 1.0.3
-# Fabulor-Description: Suppresses private messages with per-network whitelists
+# Fabulor-Description: Suppresses private messages with per-network toggles and whitelists
 
 """Fabulor add-on for suppressing unwanted private messages."""
 

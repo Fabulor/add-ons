@@ -41,7 +41,7 @@
 
 from __future__ import print_function
 
-__module_name__ = "nicenicks"
+__module_name__ = "Nicenicks"
 __module_version__ = "0.11"
 __module_description__ = (
     "Colourize nicks based on least-recently-used colour"
