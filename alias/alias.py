@@ -84,22 +84,37 @@ def _register_alias(name, commands):
     return hexchat.set_pluginpref(name, commands)
 
 
+def _print_help():
+    hexchat.prnt(HELP_ALIAS)
+    hexchat.prnt(HELP_UNALIAS)
+
+
 def on_alias(words, word_eol, userdata):
     del userdata
+    if len(words) >= 2 and words[1].upper() == "HELP":
+        _print_help()
+        return hexchat.EAT_HEXCHAT
+
     if len(words) < 3 or not words[1] or not word_eol[2]:
-        hexchat.prnt(HELP_ALIAS)
+        _print_help()
         return hexchat.EAT_HEXCHAT
 
     name = words[1].upper()
-    if not _register_alias(name, word_eol[2]):
+    if _register_alias(name, word_eol[2]):
+        hexchat.prnt(f"Alias: /{name} now aliases '{word_eol[2]}'")
+    else:
         hexchat.prnt(f"Alias: could not save /{name}")
     return hexchat.EAT_HEXCHAT
 
 
 def on_unalias(words, word_eol, userdata):
     del word_eol, userdata
+    if len(words) >= 2 and words[1].upper() == "HELP":
+        _print_help()
+        return hexchat.EAT_HEXCHAT
+
     if len(words) < 2 or not words[1]:
-        hexchat.prnt(HELP_UNALIAS)
+        _print_help()
         return hexchat.EAT_HEXCHAT
 
     name = words[1].upper()
@@ -107,6 +122,9 @@ def on_unalias(words, word_eol, userdata):
     if hook is not None:
         hexchat.unhook(hook)
         hexchat.del_pluginpref(name)
+        hexchat.prnt(f"Alias: /{name} removed")
+    else:
+        hexchat.prnt(f"Alias: /{name} is not defined")
     return hexchat.EAT_HEXCHAT
 
 
