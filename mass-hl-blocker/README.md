@@ -20,5 +20,5 @@ version reproduces the visible behavior by replacing the highlighted print
 event with an ordinary channel-message event; it does not add the Perl
 script's `mass_hl` tag.
 
-The implementation is adapted from [mass_hl_blocker.pl](../mass_hl_blocker.pl),
+The implementation is adapted from [mass_hl_blocker.pl](mass_hl_blocker.pl),
 originally by arza and distributed under GPL-3.0.
