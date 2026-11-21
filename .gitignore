@@ -2,5 +2,16 @@
 __pycache__/
 *.py[cod]
 
+# Local Aegis network configuration
+aegis/
+# aegis/settings.json
+# aegis/.settings-*.tmp
+
+whois/tests
+
 # Ignore VS Code workspace files (not per-repo settings)
 *.code-workspace
+
+README.md
+
+tests/
