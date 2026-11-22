@@ -15,6 +15,7 @@ __module_description__ = "Route WHOIS output to a network-specific tab"
 _TAB_NAME = "Whois"
 _DIALOG_TYPE = 3
 _REQUEST_TIMEOUT = 60
+_WHOIS_SERVER_TEXT_NUMERICS = frozenset(("335", "760"))
 _WHOIS_EVENTS = (
     "WhoIs Authenticated",
     "WhoIs Away Line",
@@ -131,15 +132,22 @@ def _on_print(words, word_eol, event, attributes):
 
 def _on_server_text(words, word_eol, userdata, attributes):
     del word_eol, userdata
-    if _emitting or len(words) < 3 or words[2] != "401":
+    if (_emitting or len(words) < 3
+            or (words[2] != "401" and words[2] not in _WHOIS_SERVER_TEXT_NUMERICS)):
         return fabulor.EAT_NONE
     connection_id = _connection_id()
+    if not connection_id:
+        return fabulor.EAT_NONE
     now = time.monotonic()
     requests = [(nick, deadline) for nick, deadline in _pending.get(connection_id, [])
                 if deadline > now]
     _pending[connection_id] = requests
     target = words[0].split(" ", 1)[0]
-    if not any(_same_nick(target, nick) for nick, _ in requests):
+    pending = any(_same_nick(target, nick) for nick, _ in requests)
+    active = (words[2] in _WHOIS_SERVER_TEXT_NUMERICS
+              and any(_same_nick(target, nick)
+                      for nick in _active.get(connection_id, [])))
+    if not (pending or active):
         return fabulor.EAT_NONE
     return _route("Server Text", words, attributes)
 
